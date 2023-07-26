@@ -1,0 +1,52 @@
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import HuberRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+import matplotlib.pyplot as plt
+
+# Load the dataset into a pandas DataFrame
+df = pd.read_csv('cpu_data3.csv', skiprows=1)
+
+# Get the last 12 rows for testing
+test_df = df.iloc[-12:, :]
+
+# Get the remaining rows for training
+train_df = df.iloc[:-12, :]
+
+# Extract the input features and the target variable for training set
+X_train = train_df.iloc[:, :-1].values
+y_train = train_df.iloc[:, -1].values
+
+# Extract the input features and the target variable for testing set
+X_test = test_df.iloc[:, :-1].values
+y_test = test_df.iloc[:, -1].values
+
+# Train the huber regression model on the training set
+regressor = HuberRegressor(epsilon=1.35)
+regressor.fit(X_train, y_train)
+
+# Predict the target variable for the testing set using the trained model
+y_pred = regressor.predict(X_test)
+
+# Evaluate the performance of the model using mean squared error, mean absolute deviation, and R-squared score
+mse = mean_squared_error(y_test, y_pred)
+mad = mean_absolute_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+
+print('Performance metrics on the testing set:')
+print('Actual values:',y_test)
+print('Mean Squared Error:', mse)
+print('Mean Absolute Deviation:', mad)
+print('R-squared Score:', r2)
+print('Predicted values:',y_pred)
+
+# Plot the actual and predicted values
+plt.plot(test_df.index, y_test, label='Actual')
+plt.plot(test_df.index, y_pred, label='Predicted')
+plt.xlabel('Time Interval')
+plt.ylabel('CPU Utilization')
+plt.title(f'Huber Regression: MSE={mse:.2f}, MAD={mad:.2f}, R-squared={r2:.2f}')
+plt.legend()
+plt.show()
